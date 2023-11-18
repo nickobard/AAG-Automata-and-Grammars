@@ -63,7 +63,48 @@ NFA reduce_initial_states(const MISNFA &misnfa) {
                 misnfa.m_FinalStates
         };
     }
-    return {};
+
+    State max_state_number = *(misnfa.m_InitialStates.end()--);
+    State new_initial_state = max_state_number + 1;
+
+//    add new initial state to all states for nfa without more states
+    set<State> nfa_states = misnfa.m_States;
+    nfa_states.insert(new_initial_state);
+
+    set<State> e_closure = misnfa.m_InitialStates;
+//    new state does not have any transitions, so it is pointless to add it to e-closure
+//    e_closure.insert(new_initial_state);
+
+    set<State> nfa_final_states = misnfa.m_FinalStates;
+    for (const State state: e_closure) {
+        if (misnfa.m_FinalStates.find(state) != misnfa.m_FinalStates.end()) {
+            nfa_final_states.insert(new_initial_state);
+            break;
+        }
+    }
+
+    auto transitions = misnfa.m_Transitions;
+
+    for (const Symbol symbol: misnfa.m_Alphabet) {
+        set<State> finish_states;
+        for (const State e_state: e_closure) {
+            const auto &e_trans = misnfa.m_Transitions.find({e_state, symbol});
+
+            if (e_trans == misnfa.m_Transitions.end()) {
+                continue;
+            }
+            finish_states.insert(e_trans->second.begin(), e_trans->second.end());
+        }
+        transitions.insert({{new_initial_state, symbol}, finish_states});
+    }
+
+    return {
+            nfa_states,
+            misnfa.m_Alphabet,
+            transitions,
+            new_initial_state,
+            nfa_final_states
+    };
 }
 
 DFA determinize(const MISNFA &nfa) {
@@ -924,6 +965,7 @@ DFA out13 = {
 
 int main() {
     print_MISNFA_table(in0);
+    print_NFA_table(reduce_initial_states(in0));
 //    assert(determinize(in0) == out0);
 //    assert(determinize(in1) == out1);
 //    assert(determinize(in2) == out2);
