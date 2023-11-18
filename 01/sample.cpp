@@ -255,11 +255,10 @@ DFA to_DFA(const NFA &nfa) {
         for (const Symbol symbol: nfa.m_Alphabet) {
 
             set<State> dest_state_set;
-            bool is_final_state = false;
 
             for (const State co_state: current) {
                 if (nfa.m_FinalStates.find(co_state) != nfa.m_FinalStates.end()) {
-                    is_final_state = true;
+                    dfa_final_states.insert(current_id);
                 }
 
                 const auto &transitions = nfa.m_Transitions.find({co_state, symbol});
@@ -267,6 +266,10 @@ DFA to_DFA(const NFA &nfa) {
                     const auto &co_state_dest = transitions->second;
                     dest_state_set.insert(co_state_dest.begin(), co_state_dest.end());
                 }
+            }
+
+            if (dest_state_set.empty()) {
+                continue;
             }
 
             State dest_id = UNDEF;
@@ -282,9 +285,6 @@ DFA to_DFA(const NFA &nfa) {
                 opened.emplace(dest_id, dest_state_set);
                 dfa_states.insert(dest_id);
                 states_sets.insert({dest_id, dest_state_set});
-                if (is_final_state) {
-                    dfa_final_states.insert(dest_id);
-                }
             }
             dfa_trans.insert({{current_id, symbol}, dest_id});
         }
@@ -440,9 +440,9 @@ void print_DFA_table(const DFA &nfa) {
                 cout << " " << transition->second;
             }
         }
+        cout << endl;
 
     }
-
     cout << endl;
 }
 
@@ -1314,7 +1314,8 @@ int main() {
     assert(to_NFA(in17) == out17);
 
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
-
+    print_DFA_table(determinize(in0));
+    print_DFA_table(out0);
     assert(determinize(in0) == out0);
 //    assert(determinize(in1) == out1);
 //    assert(determinize(in2) == out2);
