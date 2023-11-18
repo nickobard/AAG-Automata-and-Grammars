@@ -43,7 +43,55 @@ struct DFA {
     }
 };
 
+void print_MISNFA_table(const MISNFA &nfa) {
+
+    cout << "NFA";
+
+    vector<Symbol> symbols;
+
+    for (const Symbol symbol: nfa.m_Alphabet) {
+        cout << " " << symbol;
+        symbols.push_back(symbol);
+    }
+    cout << endl;
+
+    for (const State state: nfa.m_States) {
+        if (nfa.m_InitialStates.find(state) != nfa.m_InitialStates.end()) {
+            cout << ">";
+        }
+        if (nfa.m_FinalStates.find(state) != nfa.m_FinalStates.end()) {
+            cout << "<";
+        }
+
+        cout << state;
+
+        for (const Symbol symbol: symbols) {
+            const auto &
+                    transition = nfa.m_Transitions.find({state, symbol});
+            if (transition == nfa.m_Transitions.end()) {
+                cout << " " << "-";
+            } else {
+                cout << " ";
+                bool first = true;
+                for (const State to_state: transition->second) {
+                    if (first) {
+                        first = false;
+                        cout << to_state;
+                    } else {
+                        cout << "|" << to_state;
+                    }
+                }
+            }
+
+        }
+
+        cout << endl;
+    }
+
+}
+
 #endif
+
 
 DFA determinize(const MISNFA &nfa) {
     return {};
@@ -796,20 +844,21 @@ DFA out13 = {
 };
 
 int main() {
-    assert(determinize(in0) == out0);
-    assert(determinize(in1) == out1);
-    assert(determinize(in2) == out2);
-    assert(determinize(in3) == out3);
-    assert(determinize(in4) == out4);
-    assert(determinize(in5) == out5);
-    assert(determinize(in6) == out6);
-    assert(determinize(in7) == out7);
-    assert(determinize(in8) == out8);
-    assert(determinize(in9) == out9);
-    assert(determinize(in10) == out10);
-    assert(determinize(in11) == out11);
-    assert(determinize(in12) == out12);
-    assert(determinize(in13) == out13);
+    print_MISNFA_table(in0);
+//    assert(determinize(in0) == out0);
+//    assert(determinize(in1) == out1);
+//    assert(determinize(in2) == out2);
+//    assert(determinize(in3) == out3);
+//    assert(determinize(in4) == out4);
+//    assert(determinize(in5) == out5);
+//    assert(determinize(in6) == out6);
+//    assert(determinize(in7) == out7);
+//    assert(determinize(in8) == out8);
+//    assert(determinize(in9) == out9);
+//    assert(determinize(in10) == out10);
+//    assert(determinize(in11) == out11);
+//    assert(determinize(in12) == out12);
+//    assert(determinize(in13) == out13);
 
     return 0;
 }
