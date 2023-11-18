@@ -64,7 +64,7 @@ NFA reduce_initial_states(const MISNFA &misnfa) {
         };
     }
 
-    State max_state_number = *(misnfa.m_InitialStates.end()--);
+    State max_state_number = *max_element(misnfa.m_States.begin(), misnfa.m_States.end());
     State new_initial_state = max_state_number + 1;
 
 //    add new initial state to all states for nfa without more states
@@ -964,8 +964,9 @@ DFA out13 = {
 };
 
 int main() {
-    print_MISNFA_table(in0);
-    print_NFA_table(reduce_initial_states(in0));
+//    print_MISNFA_table(in13);
+//    print_NFA_table(reduce_initial_states(in13));
+//    print_NFA_table(reduce_initial_states(in0));
 //    assert(determinize(in0) == out0);
 //    assert(determinize(in1) == out1);
 //    assert(determinize(in2) == out2);
