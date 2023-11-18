@@ -228,10 +228,13 @@ NFA to_NFA(const MISNFA &misnfa) {
     return remove_useless_states(remove_unreachable_states(reduce_initial_states(misnfa)));
 }
 
+DFA to_DFA(const NFA &nfa) {
+
+    return {};
+}
 
 DFA determinize(const MISNFA &nfa) {
-    NFA nfa_ = to_NFA(nfa);
-    return {};
+    return to_DFA(to_NFA(nfa));
 }
 
 
@@ -1162,6 +1165,29 @@ NFA out16 = {
 };
 
 
+MISNFA in17 = {
+        {0,   1, 2, 3},
+        {'a', 'b'},
+        {
+         {{0, 'a'}, {0, 1, 2}},
+              {{0, 'b'}, {0, 1, 2}},
+                 {{1, 'a'}, {0, 1, 2}},
+                    {{1, 'b'}, {0, 1, 2}},
+                {{2, 'a'}, {0, 1, 2}},
+                {{2, 'b'}, {0, 1, 2}}
+        },
+        {0},
+        {3},
+};
+
+NFA out17 = {
+        {0},
+        {'a', 'b'},
+        {},
+        0,
+        {},
+};
+
 /*-----------------------------OWN-TESTS-CASES-------------------------------------*/
 int main() {
 
@@ -1181,6 +1207,7 @@ int main() {
     assert(to_NFA(in14) == out14);
     assert(to_NFA(in15) == out15);
     assert(to_NFA(in16) == out16);
+    assert(to_NFA(in17) == out17);
 
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
 
