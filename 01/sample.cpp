@@ -200,6 +200,11 @@ NFA remove_useless_states(const NFA &nfa) {
         State current = opened.front();
         opened.pop();
 
+        bool has_incoming = map_inversion.find(current) != map_inversion.end();
+        if (!has_incoming) {
+            visited.insert(current);
+            continue;
+        }
         const auto &incoming = map_inversion.at(current);
         for (const auto &in: incoming) {
             if (visited.find(in.first) == visited.end()) { // not found
@@ -1314,19 +1319,19 @@ int main() {
     assert(to_NFA(in17) == out17);
 
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
-    print_DFA_table(determinize(in0));
-    print_DFA_table(out0);
+//    print_DFA_table(determinize(in0));
+//    print_DFA_table(out0);
     assert(determinize(in0) == out0);
-//    assert(determinize(in1) == out1);
-//    assert(determinize(in2) == out2);
-//    assert(determinize(in3) == out3);
-//    assert(determinize(in4) == out4);
-//    assert(determinize(in5) == out5);
-//    assert(determinize(in6) == out6);
-//    assert(determinize(in7) == out7);
-//    assert(determinize(in8) == out8);
-//    assert(determinize(in9) == out9);
-//    assert(determinize(in10) == out10);
+    assert(determinize(in1) == out1);
+    assert(determinize(in2) == out2);
+    assert(determinize(in3) == out3);
+    assert(determinize(in4) == out4);
+    assert(determinize(in5) == out5);
+    assert(determinize(in6) == out6);
+    assert(determinize(in7) == out7);
+    assert(determinize(in8) == out8);
+    assert(determinize(in9) == out9);
+    assert(determinize(in10) == out10);
 //    assert(determinize(in11) == out11);
 //    assert(determinize(in12) == out12);
 //    assert(determinize(in13) == out13);
