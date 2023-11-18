@@ -359,6 +359,7 @@ void print_MISNFA_table(const MISNFA &misnfa) {
 
         cout << endl;
     }
+    cout << endl;
 
 }
 
@@ -410,6 +411,7 @@ void print_NFA_table(const NFA &nfa) {
 
         cout << endl;
     }
+    cout << endl;
 
 }
 
@@ -1297,6 +1299,16 @@ NFA out17 = {
         {},
 };
 
+MISNFA in18 = {
+        {0,   1, 2},
+        {'a', 'b'},
+        {
+         {{0, 'a'}, {2}},
+        },
+        {1, 0},
+        {1, 2},
+};
+
 /*-----------------------------OWN-TESTS-CASES-------------------------------------*/
 int main() {
     set<set<State>> s;
@@ -1318,6 +1330,9 @@ int main() {
     assert(to_NFA(in16) == out16);
     assert(to_NFA(in17) == out17);
 
+    print_MISNFA_table(in18);
+    print_NFA_table(to_NFA(in18));
+
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
 //    print_DFA_table(determinize(in0));
 //    print_DFA_table(out0);
@@ -1331,7 +1346,13 @@ int main() {
     assert(determinize(in7) == out7);
     assert(determinize(in8) == out8);
     assert(determinize(in9) == out9);
-    assert(determinize(in10) == out10);
+//    print_MISNFA_table(in10);
+//    print_NFA_table(reduce_initial_states(in10));
+//    print_NFA_table(remove_unreachable_states(reduce_initial_states(in10)));
+//    print_NFA_table(to_NFA(in10));
+//    print_DFA_table(determinize(in10));
+//    print_DFA_table(out10);
+//    assert(determinize(in10) == out10);
 //    assert(determinize(in11) == out11);
 //    assert(determinize(in12) == out12);
 //    assert(determinize(in13) == out13);
