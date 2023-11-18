@@ -132,9 +132,8 @@ NFA remove_unreachable_states(const NFA &nfa) {
 
             for (const State adjacent: transition->second) {
                 if (visited.find(adjacent) == visited.end()) { // not found
-                    continue; // next
+                    opened.push(adjacent);
                 }
-                opened.push(adjacent);
             }
         }
         visited.insert(current);
@@ -154,7 +153,7 @@ NFA remove_unreachable_states(const NFA &nfa) {
 }
 
 DFA determinize(const MISNFA &nfa) {
-    NFA nfa_ = reduce_initial_states(nfa);
+    NFA nfa_ = remove_unreachable_states(reduce_initial_states(nfa));
     return {};
 }
 
@@ -1009,10 +1008,54 @@ DFA out13 = {
         {1, 2, 3},
 };
 
+/*-----------------------------OWN-TESTS-CASES-------------------------------------*/
+
+MISNFA in14 = {
+        {0,   1, 2, 3, 4, 5},
+        {'e', 'l'},
+        {
+         {{0, 'e'}, {1}},
+              {{0, 'l'}, {1}},
+                 {{1, 'e'}, {2}},
+                    {{2, 'e'}, {0}},
+                       {{2, 'l'}, {2}},
+        },
+        {0},
+        {1,   2, 3, 4, 5},
+};
+
+
+NFA out14 = {
+        {0, 1, 2},
+        {'e', 'l'},
+        {
+                {{0, 'e'}, {1}},
+                {{0, 'l'}, {1}},
+                {{1, 'e'}, {2}},
+                {{2, 'e'}, {0}},
+                {{2, 'l'}, {2}},
+        },
+        0,
+        {1, 2, 3},
+};
+
+
+/*-----------------------------OWN-TESTS-CASES-------------------------------------*/
 int main() {
+
+/*-----------------------------OWN-ASSERTS-AND-TESTS-------------------------------------*/
 //    print_MISNFA_table(in13);
 //    print_NFA_table(reduce_initial_states(in13));
 //    print_NFA_table(reduce_initial_states(in0));
+    print_MISNFA_table(in14);
+    cout << "------------------------" << endl;
+    print_NFA_table(reduce_initial_states(in14));
+    cout << "------------------------" << endl;
+    print_NFA_table(remove_unreachable_states(reduce_initial_states(in14)));
+
+/*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
+
+
 //    assert(determinize(in0) == out0);
 //    assert(determinize(in1) == out1);
 //    assert(determinize(in2) == out2);
