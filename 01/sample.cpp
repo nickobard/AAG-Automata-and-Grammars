@@ -45,6 +45,8 @@ struct DFA {
 
 #endif
 
+constexpr State UNDEF = -1;
+
 struct NFA {
     set<State> m_States;
     set<Symbol> m_Alphabet;
@@ -229,8 +231,71 @@ NFA to_NFA(const MISNFA &misnfa) {
 }
 
 DFA to_DFA(const NFA &nfa) {
+    map<State, set<State>> states_sets;
+    set<State> dfa_states;
+    map<pair<State, Symbol>, State> dfa_trans;
+    set<State> dfa_final_states;
 
-    return {};
+    State state_id = 0;
+
+    queue<pair<State, set<State>>> opened;
+    opened.push({state_id, {nfa.m_InitialState}});
+
+    states_sets.insert({state_id, {nfa.m_InitialState}});
+    dfa_states.insert(state_id);
+
+    state_id++;
+
+    while (!opened.empty()) {
+
+        const State current_id = opened.front().first;
+        const set<State> current = opened.front().second;
+        opened.pop();
+
+        for (const Symbol symbol: nfa.m_Alphabet) {
+
+            set<State> dest_state_set;
+            bool is_final_state = false;
+
+            for (const State co_state: current) {
+                if (nfa.m_FinalStates.find(co_state) != nfa.m_FinalStates.end()) {
+                    is_final_state = true;
+                }
+
+                const auto &transitions = nfa.m_Transitions.find({co_state, symbol});
+                if (transitions != nfa.m_Transitions.end()) { // found
+                    const auto &co_state_dest = transitions->second;
+                    dest_state_set.insert(co_state_dest.begin(), co_state_dest.end());
+                }
+            }
+
+            State dest_id = UNDEF;
+            for (const auto &[id, states]: states_sets) {
+                if (states == dest_state_set) {
+                    dest_id = id;
+                    break;
+                }
+            }
+
+            if (dest_id == UNDEF) {
+                dest_id = state_id++;
+                opened.emplace(dest_id, dest_state_set);
+                dfa_states.insert(dest_id);
+                states_sets.insert({dest_id, dest_state_set});
+                if (is_final_state) {
+                    dfa_final_states.insert(dest_id);
+                }
+            }
+            dfa_trans.insert({{current_id, symbol}, dest_id});
+        }
+    }
+    return {
+            dfa_states,
+            nfa.m_Alphabet,
+            dfa_trans,
+            0,
+            dfa_final_states
+    };
 }
 
 DFA determinize(const MISNFA &nfa) {
@@ -1190,7 +1255,7 @@ NFA out17 = {
 
 /*-----------------------------OWN-TESTS-CASES-------------------------------------*/
 int main() {
-
+    set<set<State>> s;
 /*-----------------------------OWN-ASSERTS-AND-TESTS-------------------------------------*/
 //    print_MISNFA_table(in13);
 //    print_NFA_table(reduce_initial_states(in13));
