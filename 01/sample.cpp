@@ -102,7 +102,9 @@ NFA reduce_initial_states(const MISNFA &misnfa) {
             }
             finish_states.insert(e_trans->second.begin(), e_trans->second.end());
         }
-        transitions.insert({{new_initial_state, symbol}, finish_states});
+        if (!finish_states.empty()) { // see in19 - no transitions for some symbol
+            transitions.insert({{new_initial_state, symbol}, finish_states});
+        }
     }
 
     return {
@@ -1305,8 +1307,8 @@ MISNFA in18 = {
         {
          {{0, 'a'}, {2}},
         },
-        {1, 0},
-        {1, 2},
+        {1,   0},
+        {1,   2},
 };
 
 /*-----------------------------OWN-TESTS-CASES-------------------------------------*/
