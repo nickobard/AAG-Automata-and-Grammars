@@ -107,6 +107,52 @@ NFA reduce_initial_states(const MISNFA &misnfa) {
     };
 }
 
+NFA remove_unreachable_states(const NFA &nfa) {
+
+    map<pair<State, Symbol>, set<State>> reachable_transitions;
+    set<State> reachable_final_states;
+
+    set<State> visited;
+    queue<State> opened;
+    opened.push(nfa.m_InitialState);
+
+    while (!opened.empty()) {
+        State current = opened.front();
+        opened.pop();
+        for (const Symbol symbol: nfa.m_Alphabet) {
+            auto transition = nfa.m_Transitions.find({current, symbol});
+            if (transition == nfa.m_Transitions.end()) {
+                continue;
+            }
+
+            if (transition->second.empty()) { // paranoia
+                throw exception();
+            }
+            reachable_transitions.insert(*transition);
+
+            for (const State adjacent: transition->second) {
+                if (visited.find(adjacent) == visited.end()) { // not found
+                    continue; // next
+                }
+                opened.push(adjacent);
+            }
+        }
+        visited.insert(current);
+        if (nfa.m_FinalStates.find(current) != nfa.m_FinalStates.end()) {
+            reachable_final_states.insert(current);
+        }
+    }
+
+
+    return {
+            visited,
+            nfa.m_Alphabet,
+            reachable_transitions,
+            nfa.m_InitialState,
+            reachable_final_states
+    };
+}
+
 DFA determinize(const MISNFA &nfa) {
     NFA nfa_ = reduce_initial_states(nfa);
     return {};
