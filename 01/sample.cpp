@@ -23,23 +23,23 @@ using State = unsigned int;
 using Symbol = char;
 
 struct MISNFA {
-    std::set<State> m_States;
-    std::set<Symbol> m_Alphabet;
-    std::map<std::pair<State, Symbol>, std::set<State>> m_Transitions;
-    std::set<State> m_InitialStates;
-    std::set<State> m_FinalStates;
+    set<State> m_States;
+    set<Symbol> m_Alphabet;
+    map<pair<State, Symbol>, set<State>> m_Transitions;
+    set<State> m_InitialStates;
+    set<State> m_FinalStates;
 };
 
 struct DFA {
-    std::set<State> m_States;
-    std::set<Symbol> m_Alphabet;
-    std::map<std::pair<State, Symbol>, State> m_Transitions;
+    set<State> m_States;
+    set<Symbol> m_Alphabet;
+    map<pair<State, Symbol>, State> m_Transitions;
     State m_InitialState;
-    std::set<State> m_FinalStates;
+    set<State> m_FinalStates;
 
     bool operator==(const DFA &dfa) {
-        return std::tie(m_States, m_Alphabet, m_Transitions, m_InitialState, m_FinalStates) ==
-               std::tie(dfa.m_States, dfa.m_Alphabet, dfa.m_Transitions, dfa.m_InitialState, dfa.m_FinalStates);
+        return tie(m_States, m_Alphabet, m_Transitions, m_InitialState, m_FinalStates) ==
+               tie(dfa.m_States, dfa.m_Alphabet, dfa.m_Transitions, dfa.m_InitialState, dfa.m_FinalStates);
     }
 };
 
