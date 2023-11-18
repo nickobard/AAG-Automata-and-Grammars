@@ -51,6 +51,11 @@ struct NFA {
     map<pair<State, Symbol>, set<State>> m_Transitions;
     State m_InitialState;
     set<State> m_FinalStates;
+
+    bool operator==(const NFA &nfa) {
+        return tie(m_States, m_Alphabet, m_Transitions, m_InitialState, m_FinalStates) ==
+               tie(nfa.m_States, nfa.m_Alphabet, nfa.m_Transitions, nfa.m_InitialState, nfa.m_FinalStates);
+    }
 };
 
 NFA reduce_initial_states(const MISNFA &misnfa) {
@@ -152,8 +157,80 @@ NFA remove_unreachable_states(const NFA &nfa) {
     };
 }
 
+/**
+ * Expects that there are no unreachable states, so use remove_unreachable_states before using this function.
+ */
+NFA remove_useless_states(const NFA &nfa) {
+
+    if (nfa.m_FinalStates.empty()) {
+        return {
+                {nfa.m_InitialState},
+                nfa.m_Alphabet,
+                {},
+                nfa.m_InitialState,
+                {}
+        };
+    }
+
+    // preprocessing
+    map<State, set<pair<State, Symbol> >> map_inversion;
+    for (const auto &[key, value]: nfa.m_Transitions) {
+        for (const State image: value) {
+            const auto &inverted_transition = map_inversion.find(image);
+            if (inverted_transition == map_inversion.end()) { // not found
+                map_inversion.insert({image, {key}});
+            } else {
+                inverted_transition->second.insert(key);
+            }
+
+        }
+    }
+
+    // now classic bfs
+    map<pair<State, Symbol>, set<State>> useful_transitions;
+    set<State> visited;
+    queue<State> opened;
+    for (const State final_state: nfa.m_FinalStates) {
+        opened.push(final_state);
+    }
+
+    while (!opened.empty()) {
+        State current = opened.front();
+        opened.pop();
+
+        const auto &incoming = map_inversion.at(current);
+        for (const auto &in: incoming) {
+            if (visited.find(in.first) == visited.end()) { // not found
+                opened.push(in.first);
+            }
+            const auto &transition = useful_transitions.find(in);
+            if (transition == useful_transitions.end()) { // not found
+                useful_transitions.insert({in, {current}});
+            } else {
+                transition->second.insert(current);
+            }
+        }
+        visited.insert(current);
+    }
+
+
+    return {
+            visited,
+            nfa.m_Alphabet,
+            useful_transitions,
+            nfa.m_InitialState,
+            nfa.m_FinalStates
+    };
+}
+
+
+NFA to_NFA(const MISNFA &misnfa) {
+    return remove_useless_states(remove_unreachable_states(reduce_initial_states(misnfa)));
+}
+
+
 DFA determinize(const MISNFA &nfa) {
-    NFA nfa_ = remove_unreachable_states(reduce_initial_states(nfa));
+    NFA nfa_ = to_NFA(nfa);
     return {};
 }
 
@@ -1036,7 +1113,30 @@ NFA out14 = {
                 {{2, 'l'}, {2}},
         },
         0,
-        {1, 2, 3},
+        {1, 2},
+};
+
+MISNFA in15 = {
+        {0,   1, 2},
+        {'a', 'b'},
+        {
+         {{0, 'a'}, {0, 1}},
+              {{0, 'b'}, {0, 2}}
+        },
+        {0},
+        {1,   2},
+};
+
+
+NFA out15 = {
+        {0, 1, 2},
+        {'a', 'b'},
+        {
+                {{0, 'a'}, {0, 1}},
+                {{0, 'b'}, {0, 2}}
+        },
+        0,
+        {1, 2},
 };
 
 
@@ -1047,11 +1147,14 @@ int main() {
 //    print_MISNFA_table(in13);
 //    print_NFA_table(reduce_initial_states(in13));
 //    print_NFA_table(reduce_initial_states(in0));
-    print_MISNFA_table(in14);
-    cout << "------------------------" << endl;
-    print_NFA_table(reduce_initial_states(in14));
-    cout << "------------------------" << endl;
-    print_NFA_table(remove_unreachable_states(reduce_initial_states(in14)));
+//    print_MISNFA_table(in14);
+//    cout << "------------------------" << endl;
+//    print_NFA_table(reduce_initial_states(in14));
+//    cout << "------------------------" << endl;
+//    print_NFA_table(remove_unreachable_states(reduce_initial_states(in14)));
+
+    assert(remove_unreachable_states(reduce_initial_states(in14)) == out14);
+    assert(remove_unreachable_states(reduce_initial_states(in15)) == out15);
 
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
 
