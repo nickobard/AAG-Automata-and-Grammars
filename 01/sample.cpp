@@ -43,9 +43,92 @@ struct DFA {
     }
 };
 
-void print_MISNFA_table(const MISNFA &nfa) {
+#endif
+
+struct NFA {
+    set<State> m_States;
+    set<Symbol> m_Alphabet;
+    map<pair<State, Symbol>, set<State>> m_Transitions;
+    State m_InitialState;
+    set<State> m_FinalStates;
+};
+
+NFA reduce_initial_states(const MISNFA &misnfa) {
+    if (misnfa.m_InitialStates.size() == 1) {
+        return {
+                misnfa.m_States,
+                misnfa.m_Alphabet,
+                misnfa.m_Transitions,
+                *misnfa.m_InitialStates.begin(),
+                misnfa.m_FinalStates
+        };
+    }
+    return {};
+}
+
+DFA determinize(const MISNFA &nfa) {
+    NFA nfa_ = reduce_initial_states(nfa);
+    return {};
+}
+
+
+#ifndef __PROGTEST__
+
+
+void print_MISNFA_table(const MISNFA &misnfa) {
 
     cout << "MISNFA";
+
+    vector<Symbol> symbols;
+
+    for (const Symbol symbol: misnfa.m_Alphabet) {
+        cout << " " << symbol;
+        symbols.push_back(symbol);
+    }
+    cout << endl;
+
+    for (const State state: misnfa.m_States) {
+        if (misnfa.m_InitialStates.find(state) != misnfa.m_InitialStates.end()) {
+            cout << ">";
+        }
+        if (misnfa.m_FinalStates.find(state) != misnfa.m_FinalStates.end()) {
+            cout << "<";
+        }
+
+        cout << state;
+
+        for (const Symbol symbol: symbols) {
+            const auto &
+                    transition = misnfa.m_Transitions.find({state, symbol});
+            if (transition == misnfa.m_Transitions.end()) {
+                cout << " " << "-";
+            } else {
+
+                if (transition->second.empty()) { // paranoia
+                    throw exception();
+                }
+                cout << " ";
+                bool first = true;
+                for (const State to_state: transition->second) {
+                    if (first) {
+                        first = false;
+                        cout << to_state;
+                    } else {
+                        cout << "|" << to_state;
+                    }
+                }
+            }
+
+        }
+
+        cout << endl;
+    }
+
+}
+
+void print_NFA_table(const NFA &nfa) {
+
+    cout << "NFA";
 
     vector<Symbol> symbols;
 
@@ -56,7 +139,7 @@ void print_MISNFA_table(const MISNFA &nfa) {
     cout << endl;
 
     for (const State state: nfa.m_States) {
-        if (nfa.m_InitialStates.find(state) != nfa.m_InitialStates.end()) {
+        if (state == nfa.m_InitialState) {
             cout << ">";
         }
         if (nfa.m_FinalStates.find(state) != nfa.m_FinalStates.end()) {
@@ -94,14 +177,6 @@ void print_MISNFA_table(const MISNFA &nfa) {
 
 }
 
-#endif
-
-
-DFA determinize(const MISNFA &nfa) {
-    return {};
-}
-
-#ifndef __PROGTEST__
 MISNFA in0 = {
         {0,   1, 2},
         {'e', 'l'},
