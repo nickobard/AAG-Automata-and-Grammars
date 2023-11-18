@@ -1139,6 +1139,28 @@ NFA out15 = {
         {1, 2},
 };
 
+MISNFA in16 = {
+        {0,   1, 2},
+        {'a', 'b'},
+        {
+         {{0, 'a'}, {0, 1}},
+              {{0, 'b'}, {0, 2}}
+        },
+        {0},
+        {1},
+};
+
+NFA out16 = {
+        {0, 1},
+        {'a', 'b'},
+        {
+                {{0, 'a'}, {0, 1}},
+                {{0, 'b'}, {0}}
+        },
+        0,
+        {1},
+};
+
 
 /*-----------------------------OWN-TESTS-CASES-------------------------------------*/
 int main() {
@@ -1155,6 +1177,10 @@ int main() {
 
     assert(remove_unreachable_states(reduce_initial_states(in14)) == out14);
     assert(remove_unreachable_states(reduce_initial_states(in15)) == out15);
+
+    assert(to_NFA(in14) == out14);
+    assert(to_NFA(in15) == out15);
+    assert(to_NFA(in16) == out16);
 
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
 
