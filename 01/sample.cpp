@@ -45,7 +45,7 @@ struct DFA {
 
 void print_MISNFA_table(const MISNFA &nfa) {
 
-    cout << "NFA";
+    cout << "MISNFA";
 
     vector<Symbol> symbols;
 
@@ -71,6 +71,10 @@ void print_MISNFA_table(const MISNFA &nfa) {
             if (transition == nfa.m_Transitions.end()) {
                 cout << " " << "-";
             } else {
+
+                if (transition->second.empty()) { // paranoia
+                    throw exception();
+                }
                 cout << " ";
                 bool first = true;
                 for (const State to_state: transition->second) {
