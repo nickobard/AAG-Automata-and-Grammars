@@ -408,6 +408,45 @@ void print_NFA_table(const NFA &nfa) {
 
 }
 
+void print_DFA_table(const DFA &nfa) {
+
+    cout << "DFA";
+
+    vector<Symbol> symbols;
+
+    for (const Symbol symbol: nfa.m_Alphabet) {
+        cout << " " << symbol;
+        symbols.push_back(symbol);
+    }
+    cout << endl;
+
+    for (const State state: nfa.m_States) {
+        if (state == nfa.m_InitialState) {
+            cout << ">";
+        }
+        if (nfa.m_FinalStates.find(state) != nfa.m_FinalStates.end()) {
+            cout << "<";
+        }
+
+        cout << state;
+
+        for (const Symbol symbol: symbols) {
+            const auto &
+                    transition = nfa.m_Transitions.find({state, symbol});
+            if (transition == nfa.m_Transitions.end()) { // not found
+                cout << " " << "-";
+            } else {
+
+                cout << " " << transition->second;
+            }
+        }
+
+    }
+
+    cout << endl;
+}
+
+
 MISNFA in0 = {
         {0,   1, 2},
         {'e', 'l'},
@@ -1276,8 +1315,7 @@ int main() {
 
 /*-----------------------------PROGTEST-ASSERTS-------------------------------------*/
 
-
-//    assert(determinize(in0) == out0);
+    assert(determinize(in0) == out0);
 //    assert(determinize(in1) == out1);
 //    assert(determinize(in2) == out2);
 //    assert(determinize(in3) == out3);
