@@ -35,43 +35,51 @@ struct Grammar {
 #endif
 
 
-constexpr int NO_RULE_FOUND = -1;
 using Cell = map<int, vector<int>>;
 using Table = vector<vector<Cell>>;
 using Rules = vector<pair<Symbol, vector<Symbol>>>;
 
-int find_rule_index(const Rules &rules, const vector<Symbol> &s) {
+vector<int> find_rule_indexes(const Rules &rules, const vector<Symbol> &s) {
+    vector<int> indexes;
     for (int rule_index = 0; rule_index < rules.size(); rule_index++) {
         if (s == rules[rule_index].second) {
-            return rule_index;
+            indexes.push_back(rule_index);
         }
     }
-    return NO_RULE_FOUND;
+    return indexes;
 }
 
 Symbol index_to_symbol(int index, const Rules &rules) {
     return rules[index].first;
 }
 
-void print_table(const Table &t, const Grammar &g, const Word &w) {
+void print_table(const Table &t, const Grammar &g) {
     for (int row = 0; row < t.size(); row++) {
         for (int column = 0; column < t.size(); column++) {
             if (column == 0)
                 cout << "|";
             cout << "{";
-            bool first_element = true;
             for (const auto &element: t[row][column]) {
-                if (first_element) {
-                    first_element = false;
-                    cout << " " << index_to_symbol(element.first, g.m_Rules) << " ";
-                    continue;
-                }
-                cout << " " << index_to_symbol(element.first, g.m_Rules) << ", ";
+                cout << " " << index_to_symbol(element.first, g.m_Rules) << " ";
             }
             cout << "}|";
         }
         cout << endl;
     }
+}
+
+pair<int, int> get_diagonal_position(int i, int j, int l) {
+    return {i + l + 1, j - l - 1};
+}
+
+vector<vector<Symbol>> get_permutations(const Cell &direct, const Cell &diag, const Rules &rules) {
+    vector<vector<Symbol>> rule_images;
+    for (const auto &[index_direct, predecessor_direct]: direct) {
+        for (const auto &[index_diag, predecessor_diag]: diag) {
+            rule_images.push_back({index_to_symbol(index_direct, rules), index_to_symbol(index_diag, rules)});
+        }
+    }
+    return rule_images;
 }
 
 std::vector<size_t> trace(const Grammar &g, const Word &w) {
@@ -82,13 +90,33 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
     for (int j = 0; j < n; j++) {
         for (int i = 0; i < n - j; i++) {
             if (j == 0) { // first column
-                int index = find_rule_index(g.m_Rules, {w[i]});
-                T[i][j].insert({index, {}});
+                const auto indexes = find_rule_indexes(g.m_Rules, {w[i]});
+                for (const auto index: indexes) {
+                    T[i][j].insert({index, {}});
+                }
+            }
+            set<Symbol> inserted_symbols;
+
+            for (int l = 0; l < j; l++) {
+                auto [diag_i, diag_l] = get_diagonal_position(i, j, l);
+                auto rule_images = get_permutations(T[i][l], T[diag_i][diag_l], g.m_Rules);
+
+                for (const auto &rule_image: rule_images) {
+                    auto indexes = find_rule_indexes(g.m_Rules, rule_image);
+                    for (const auto index: indexes) {
+                        const auto &[it, inserted] = inserted_symbols.insert(index_to_symbol(index, g.m_Rules));
+                        if (inserted) {
+                            T[i][j].insert({index, {}});
+                        }
+                    }
+                }
             }
 
         }
     }
-    print_table(T, g, w);
+#ifndef __PROGTEST__
+    print_table(T, g);
+#endif
     return {};
 }
 
