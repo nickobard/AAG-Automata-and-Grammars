@@ -35,13 +35,13 @@ struct Grammar {
 #endif
 
 
-using Cell = map<int, vector<int>>;
+using Cell = map<size_t, vector<size_t>>;
 using Table = vector<vector<Cell>>;
 using Rules = vector<pair<Symbol, vector<Symbol>>>;
 
-vector<int> find_rule_indexes(const Rules &rules, const vector<Symbol> &s) {
-    vector<int> indexes;
-    for (int rule_index = 0; rule_index < rules.size(); rule_index++) {
+vector<size_t> find_rule_indexes(const Rules &rules, const vector<Symbol> &s) {
+    vector<size_t> indexes;
+    for (size_t rule_index = 0; rule_index < rules.size(); rule_index++) {
         if (s == rules[rule_index].second) {
             indexes.push_back(rule_index);
         }
@@ -49,13 +49,13 @@ vector<int> find_rule_indexes(const Rules &rules, const vector<Symbol> &s) {
     return indexes;
 }
 
-Symbol index_to_symbol(int index, const Rules &rules) {
+Symbol index_to_symbol(size_t index, const Rules &rules) {
     return rules[index].first;
 }
 
 void print_table(const Table &t, const Grammar &g) {
-    for (int row = 0; row < t.size(); row++) {
-        for (int column = 0; column < t.size(); column++) {
+    for (size_t row = 0; row < t.size(); row++) {
+        for (size_t column = 0; column < t.size(); column++) {
             if (column == 0)
                 cout << "|";
             cout << "{";
@@ -68,13 +68,13 @@ void print_table(const Table &t, const Grammar &g) {
     }
 }
 
-pair<int, int> get_diagonal_position(int i, int j, int l) {
+pair<size_t, size_t> get_diagonal_position(size_t i, size_t j, size_t l) {
     return {i + l + 1, j - l - 1};
 }
 
-vector<pair<pair<int, int>, vector<Symbol>>>
+vector<pair<pair<size_t, size_t>, vector<Symbol>>>
 get_permutations(const Cell &direct, const Cell &diag, const Rules &rules) {
-    vector<pair<pair<int, int>, vector<Symbol>>> rule_images;
+    vector<pair<pair<size_t, size_t>, vector<Symbol>>> rule_images;
     for (const auto &[index_direct, predecessor_direct]: direct) {
         for (const auto &[index_diag, predecessor_diag]: diag) {
             rule_images.push_back({{index_direct,                         index_diag},
@@ -89,8 +89,8 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
     size_t n = w.size();
     Table T = Table(n, vector<Cell>(n));
 
-    for (int j = 0; j < n; j++) {
-        for (int i = 0; i < n - j; i++) {
+    for (size_t j = 0; j < n; j++) {
+        for (size_t i = 0; i < n - j; i++) {
             if (j == 0) { // first column
                 const auto indexes = find_rule_indexes(g.m_Rules, {w[i]});
                 for (const auto index: indexes) {
@@ -99,7 +99,7 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
             }
             set<Symbol> inserted_symbols;
 
-            for (int l = 0; l < j; l++) {
+            for (size_t l = 0; l < j; l++) {
                 auto [diag_i, diag_l] = get_diagonal_position(i, j, l);
                 auto rule_images = get_permutations(T[i][l], T[diag_i][diag_l], g.m_Rules);
 
@@ -117,7 +117,7 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
         }
     }
     vector<size_t> predecessors;
-    queue<pair<vector<int>, pair<int, int>>> q;
+    queue<pair<vector<size_t>, pair<size_t, size_t>>> q;
     for (const auto &[index, predecessor]: T[0][n - 1]) {
         if (index_to_symbol(index, g.m_Rules) == g.m_InitialSymbol) {
             predecessors.push_back(index);
@@ -133,10 +133,10 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
     while (!q.empty()) {
         auto [predecessor, current_pos] = q.front();
         q.pop();
-        int i_direct = predecessor[0];
-        int j_direct = predecessor[1];
-        int index_direct = predecessor[2];
-        int index_diag = predecessor[3];
+        size_t i_direct = predecessor[0];
+        size_t j_direct = predecessor[1];
+        size_t index_direct = predecessor[2];
+        size_t index_diag = predecessor[3];
         auto [i_diag, j_diag] = get_diagonal_position(current_pos.first, current_pos.second, j_direct);
 
         // direct
