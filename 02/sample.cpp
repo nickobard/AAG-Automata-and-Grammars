@@ -72,11 +72,13 @@ pair<int, int> get_diagonal_position(int i, int j, int l) {
     return {i + l + 1, j - l - 1};
 }
 
-vector<vector<Symbol>> get_permutations(const Cell &direct, const Cell &diag, const Rules &rules) {
-    vector<vector<Symbol>> rule_images;
+vector<pair<pair<int, int>, vector<Symbol>>>
+get_permutations(const Cell &direct, const Cell &diag, const Rules &rules) {
+    vector<pair<pair<int, int>, vector<Symbol>>> rule_images;
     for (const auto &[index_direct, predecessor_direct]: direct) {
         for (const auto &[index_diag, predecessor_diag]: diag) {
-            rule_images.push_back({index_to_symbol(index_direct, rules), index_to_symbol(index_diag, rules)});
+            rule_images.push_back({{index_direct,                         index_diag},
+                                   {index_to_symbol(index_direct, rules), index_to_symbol(index_diag, rules)}});
         }
     }
     return rule_images;
@@ -101,12 +103,12 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
                 auto [diag_i, diag_l] = get_diagonal_position(i, j, l);
                 auto rule_images = get_permutations(T[i][l], T[diag_i][diag_l], g.m_Rules);
 
-                for (const auto &rule_image: rule_images) {
-                    auto indexes = find_rule_indexes(g.m_Rules, rule_image);
+                for (const auto &[rule_image_indexes, rule_image_symbols]: rule_images) {
+                    auto indexes = find_rule_indexes(g.m_Rules, rule_image_symbols);
                     for (const auto index: indexes) {
                         const auto &[it, inserted] = inserted_symbols.insert(index_to_symbol(index, g.m_Rules));
                         if (inserted) {
-                            T[i][j].insert({index, {}});
+                            T[i][j].insert({index, {i, l, rule_image_indexes.first, rule_image_indexes.second}});
                         }
                     }
                 }
@@ -114,10 +116,48 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
 
         }
     }
+    vector<size_t> predecessors;
+    queue<pair<vector<int>, pair<int, int>>> q;
+    for (const auto &[index, predecessor]: T[0][n - 1]) {
+        if (index_to_symbol(index, g.m_Rules) == g.m_InitialSymbol) {
+            predecessors.push_back(index);
+            q.push({predecessor, {0, n - 1}});
+            break;
+        }
+    }
+
+    if (predecessors.empty()) {
+        return {};
+    }
+
+    while (!q.empty()) {
+        auto [predecessor, current_pos] = q.front();
+        q.pop();
+        int i_direct = predecessor[0];
+        int j_direct = predecessor[1];
+        int index_direct = predecessor[2];
+        int index_diag = predecessor[3];
+        auto [i_diag, j_diag] = get_diagonal_position(current_pos.first, current_pos.second, j_direct);
+
+        // direct
+        predecessors.push_back(index_direct);
+        auto it_direct = T[i_direct][j_direct].find(index_direct);
+        if (!it_direct->second.empty()){
+            q.push({it_direct->second, {i_direct, j_direct}});
+        }
+
+
+        // diag
+        predecessors.push_back(index_diag);
+        auto it_diag = T[i_diag][j_diag].find(index_diag);
+        if (!it_diag->second.empty()){
+            q.push({it_diag->second, {i_direct, j_direct}});
+        }
+    }
 #ifndef __PROGTEST__
-    print_table(T, g);
+//    print_table(T, g);
 #endif
-    return {};
+    return predecessors;
 }
 
 #ifndef __PROGTEST__
