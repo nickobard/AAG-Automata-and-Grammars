@@ -142,7 +142,7 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
         // direct
         predecessors.push_back(index_direct);
         auto it_direct = T[i_direct][j_direct].find(index_direct);
-        if (!it_direct->second.empty()){
+        if (!it_direct->second.empty()) {
             q.push({it_direct->second, {i_direct, j_direct}});
         }
 
@@ -150,12 +150,16 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
         // diag
         predecessors.push_back(index_diag);
         auto it_diag = T[i_diag][j_diag].find(index_diag);
-        if (!it_diag->second.empty()){
-            q.push({it_diag->second, {i_direct, j_direct}});
+        if (!it_diag->second.empty()) {
+            q.push({it_diag->second, {i_diag, j_diag}});
         }
     }
 #ifndef __PROGTEST__
 //    print_table(T, g);
+    for (auto i: predecessors) {
+        cout << i << ", ";
+    }
+    cout << endl;
 #endif
     return predecessors;
 }
