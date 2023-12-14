@@ -105,7 +105,6 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
         return {};
     }
     Table T = Table(n, vector<Cell>(n));
-
     for (size_t j = 0; j < n; j++) {
         for (size_t i = 0; i < n - j; i++) {
             if (j == 0) { // first column
@@ -114,6 +113,7 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
                     T[i][j].insert({index, {}});
                 }
             }
+            set<Symbol> inserted_symbols;
             for (size_t l = 0; l < j; l++) {
                 auto [diag_i, diag_l] = get_diagonal_position(i, j, l);
                 auto rule_images = get_permutations(T[i][l], T[diag_i][diag_l], g.m_Rules);
@@ -121,7 +121,9 @@ std::vector<size_t> trace(const Grammar &g, const Word &w) {
                 for (const auto &[rule_image_indexes, rule_image_symbols]: rule_images) {
                     auto indexes = find_rule_indexes(g.m_Rules, rule_image_symbols);
                     for (const auto index: indexes) {
-                        T[i][j].insert({index, {i, l, rule_image_indexes.first, rule_image_indexes.second}});
+                        const auto &[it, inserted] = inserted_symbols.insert(index_to_symbol(index, g.m_Rules));
+                        if (inserted)
+                            T[i][j].insert({index, {i, l, rule_image_indexes.first, rule_image_indexes.second}});
                     }
                 }
             }
