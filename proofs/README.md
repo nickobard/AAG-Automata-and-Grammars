@@ -5,25 +5,25 @@ Here are solutions to theoretical computer science tasks related to formal langu
 
 ```
 .
-├── README.md
-├── task_01
-│   ├── task_hw_1_en.pdf
-│   ├── task_hw_1_en.tex
-│   ├── zadani-du-1-cz.pdf
-│   └── zadani-du-1_cz.tex
-└── task_03
-    ├── automat.png
-    ├── task_hw_3_en.pdf
-    ├── task_hw_3_en.tex
-    ├── zadani-du-3-cz.pdf
-    └── zadani-du-3_cz.tex
+├── 01 - Context-Free Grammar Design and Language Properties
+│   ├── task_hw_1_en.pdf
+│   ├── task_hw_1_en.tex
+│   ├── zadani-du-1-cz.pdf
+│   └── zadani-du-1_cz.tex
+├── 03 - Regularity of Languages and the Pumping Lemma
+│   ├── automat.png
+│   ├── task_hw_3_en.pdf
+│   ├── task_hw_3_en.tex
+│   ├── zadani-du-3-cz.pdf
+│   └── zadani-du-3_cz.tex
+└── README.md
 ```
 
 ## Task 1: Context-Free Grammar Design and Language Properties
 
 ### Description
 
-In **task_01**, we are presented with two problems:
+In **01 - Context-Free Grammar Design and Language Properties**, we are presented with two problems:
 
 1. **Designing a Context-Free Grammar (CFG):**
 
@@ -55,7 +55,7 @@ In **task_01**, we are presented with two problems:
 
 ### Description
 
-In **task_03**, we analyze two languages to determine their regularity and, if they are regular, find the smallest possible pumping lemma constant $ p $.
+In **03 - Regularity of Languages and the Pumping Lemma**, we analyze two languages to determine their regularity and, if they are regular, find the smallest possible pumping lemma constant $ p $.
 
 1. **Language $ L_1 $:**
 
